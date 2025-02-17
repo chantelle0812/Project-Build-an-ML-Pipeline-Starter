@@ -13,6 +13,7 @@ _steps = [
     "data_check",
     "data_split",
     "train_random_forest",
+    "data_check"
     # NOTE: We do not include this in the steps so it is not run by mistake.
     # You first need to promote a model export to "prod" before you can run this,
     # then you need to run this step explicitly
@@ -51,22 +52,46 @@ def go(config: DictConfig):
             )
 
         if "basic_cleaning" in active_steps:
-            ##################
-            # Implement here #
-            ##################
-            pass
+           _ = mlflow.run(
+                os.path.join(hydra.utils.get_original_cwd(), "src", "basic_cleaning"),
+                "main",
+                parameters={
+                    "input_artifact": config["data"]["raw_dataset"],
+                    "output_artifact": "clean_sample.csv",
+                    "output_type": "clean_data",
+                    "output_description": "Cleaned dataset after removing outliers",
+                    "min_price": config["data"]["min_price"],
+                    "max_price": config["data"]["max_price"]
+                },
+            )
+            
 
         if "data_check" in active_steps:
-            ##################
-            # Implement here #
-            ##################
-            pass
+            _ = mlflow.run(
+                os.path.join(hydra.utils.get_original_cwd(), "src", "data_check"),
+                "main",
+                parameters={
+                    "csv": "clean_sample.csv:latest",
+                    "ref": "clean_sample.csv:reference",
+                    "kl_threshold": config["data_check"]["kl_threshold"],
+                    "min_price": config["data"]["min_price"],
+                    "max_price": config["data"]["max_price"]
+                },
+            )
+            
 
         if "data_split" in active_steps:
-            ##################
-            # Implement here #
-            ##################
-            pass
+           _ = mlflow.run(
+                os.path.join(hydra.utils.get_original_cwd(), "src", "data_split"),
+                "main",
+                parameters={
+                    "input_artifact": "clean_sample.csv:latest",
+                    "artifact_root": "split_data",
+                    "test_size": config["data_split"]["test_size"],
+                    "random_seed": config["main"]["random_seed"],
+                    "stratify_by": config["data_split"]["stratify_by"]
+                },
+            )
 
         if "train_random_forest" in active_steps:
 
@@ -76,21 +101,33 @@ def go(config: DictConfig):
                 json.dump(dict(config["modeling"]["random_forest"].items()), fp)  # DO NOT TOUCH
 
             # NOTE: use the rf_config we just created as the rf_config parameter for the train_random_forest
-            # step
+            _ = mlflow.run(
+                os.path.join(hydra.utils.get_original_cwd(), "src", "train_random_forest"),
+                "main",
+                parameters={
+                    "train_data": "split_data_train.csv:latest",
+                    "model_config": rf_config,
+                    "output_artifact": "random_forest_export",
+                    "random_seed": config["main"]["random_seed"],
+                    "val_size": config["modeling"]["val_size"],
+                    "stratify_by": config["data_split"]["stratify_by"]
+                },
+            )
 
-            ##################
-            # Implement here #
-            ##################
 
-            pass
+            
 
         if "test_regression_model" in active_steps:
 
-            ##################
-            # Implement here #
-            ##################
+            _ = mlflow.run(
+                os.path.join(hydra.utils.get_original_cwd(), "src", "test_regression_model"),
+                "main",
+                parameters={
+                    "mlflow_model": "random_forest_export:prod",
+                    "test_data": "split_data_test.csv:latest"
+                },
+            )
 
-            pass
 
 
 if __name__ == "__main__":
