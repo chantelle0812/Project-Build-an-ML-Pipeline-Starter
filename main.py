@@ -80,18 +80,19 @@ def go(config: DictConfig):
             )
             
 
-        #if "data_split" in active_steps:
-          # _ = mlflow.run(
-           #     os.path.join(hydra.utils.get_original_cwd(), "src", "data_split"),
-           #     "main",
-           #     parameters={
-           #         "input_artifact": "clean_sample.csv:latest",
-           #         "artifact_root": "split_data",
-           #         "test_size": config["data_split"]["test_size"],
-           #         "random_seed": config["main"]["random_seed"],
-           #         "stratify_by": config["data_split"]["stratify_by"]
-           #     },
-           # )
+        if "data_split" in active_steps:
+           _ = mlflow.run(
+               f"{config['main']['components_repository']}/train_val_test_split"
+                #os.path.join(hydra.utils.get_original_cwd(), "src", "data_split"),
+                "main",
+                parameters={
+                    "input": "nyc_airbnb/clean_sample.csv:latest",
+                    "artifact_root": "split_data",
+                    "test_size": config["data_split"]["test_size"],
+                    "random_seed": config["main"]["random_seed"],
+                    "stratify_by": config["data_split"]["stratify_by"]
+                },
+            )
 
         #if "train_random_forest" in active_steps:
 
