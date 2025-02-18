@@ -71,8 +71,8 @@ def go(config: DictConfig):
                 os.path.join(hydra.utils.get_original_cwd(), "src", "data_check"),
                 "main",
                 parameters={
-                    "csv": "nyc_airbnb/clean_data/clean_sample.csv:latest",
-                    "ref": "nyc_airbnb/clean_data/clean_sample.csv:latest",
+                    "csv": "nyc_airbnb/clean_sample.csv:latest",
+                    "ref": "nyc_airbnb/clean_sample.csv:latest",
                     "kl_threshold": config["data_check"]["kl_threshold"],
                     "min_price": config["data_check"]["min_price"],
                     "max_price": config["data_check"]["max_price"]
