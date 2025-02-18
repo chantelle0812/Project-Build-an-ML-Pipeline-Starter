@@ -22,7 +22,7 @@ _steps = [
 
 
 # This automatically reads in the configuration
-@hydra.main(config_name='config')
+@hydra.main(version_base="1.1", config_path=".", config_name="config")
 def go(config: DictConfig):
 
     # Setup the wandb experiment. All runs will be grouped under this name
@@ -52,17 +52,17 @@ def go(config: DictConfig):
             )
 
         if "basic_cleaning" in active_steps:
-           _ = mlflow.run(
+            _ = mlflow.run(
                 os.path.join(hydra.utils.get_original_cwd(), "src", "basic_cleaning"),
                 "main",
                 parameters={
-                    "input_artifact": config["data"]["raw_dataset"],
+                    "input_artifact": f"nyc_airbnb/sample.csv:latest",  # Simplified path
                     "output_artifact": "clean_sample.csv",
                     "output_type": "clean_data",
                     "output_description": "Cleaned dataset after removing outliers",
-                    "min_price": config["data"]["min_price"],
-                    "max_price": config["data"]["max_price"]
-                },
+                    "min_price": config["data_check"]["min_price"],
+                    "max_price": config["data_check"]["max_price"]
+                 },
             )
             
 
@@ -71,11 +71,11 @@ def go(config: DictConfig):
                 os.path.join(hydra.utils.get_original_cwd(), "src", "data_check"),
                 "main",
                 parameters={
-                    "csv": "clean_sample.csv:latest",
-                    "ref": "clean_sample.csv:reference",
+                    "csv": "nyc_airbnb/clean_data/clean_sample.csv:latest",
+                    "ref": "nyc_airbnb/clean_data/clean_sample.csv:latest",
                     "kl_threshold": config["data_check"]["kl_threshold"],
-                    "min_price": config["data"]["min_price"],
-                    "max_price": config["data"]["max_price"]
+                    "min_price": config["data_check"]["min_price"],
+                    "max_price": config["data_check"]["max_price"]
                 },
             )
             
