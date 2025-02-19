@@ -129,16 +129,7 @@ def go(config: DictConfig):
                 "test_dataset": "nyc_airbnb/test_data.csv:latest"
             },
         )
-        #if "test_regression_model" in active_steps:
-
-          #  _ = mlflow.run(
-           #     os.path.join(hydra.utils.get_original_cwd(), "src", "test_regression_model"),
-          #      "main",
-           #     parameters={
-          #          "mlflow_model": "random_forest_export:prod",
-          #          "test_data": "split_data_test.csv:latest"
-          #      },
-          #  )
+        
 
 
 
